@@ -13,6 +13,7 @@
 from datetime import date
 
 from holidays.calendars.gregorian import MON, TUE, WED, THU, FRI, SAT, SUN, _timedelta
+from holidays.constants import HOLIDAY_NAME_DELIMITER
 from holidays.holiday_base import DateArg, HolidayBase
 
 
@@ -181,8 +182,8 @@ class ObservedHolidayBase(HolidayBase):
 
             estimated_label_text = estimated_label.strip("%s ()（）")
             # Use observed_estimated_label instead of observed_label for estimated dates.
-            for name in (name,) if name else self.get_list(dt):
-                holiday_name = self.tr(name)
+            for n in (name,) if name else self.get_list(dt):
+                holiday_name = self.tr(n)
                 observed_estimated_label = None
                 if estimated_label_text and estimated_label_text in holiday_name:
                     holiday_name = holiday_name.replace(f"({estimated_label_text})", "").strip()
@@ -192,8 +193,22 @@ class ObservedHolidayBase(HolidayBase):
                     (observed_estimated_label or observed_label) % holiday_name, dt_observed
                 )
         else:
-            for name in (name,) if name else self.get_list(dt):
-                super()._add_holiday(name, dt_observed)
+            for n in (name,) if name else self.get_list(dt):
+                super()._add_holiday(n, dt_observed)
+
+        if getattr(self, "observed", None) == "only" and not force_observed:
+            statutory_names = (name,) if name else self.get_list(dt)
+            if dt in self:
+                dt_names = self.get_list(dt)
+                for statutory_name in statutory_names:
+                    if statutory_name in dt_names:
+                        dt_names.remove(statutory_name)
+                
+                if dt_names:
+                    # Update with remaining names
+                    self[dt] = HOLIDAY_NAME_DELIMITER.join(sorted(dt_names))
+                else:
+                    self.pop(dt)
 
         return True, dt_observed
 

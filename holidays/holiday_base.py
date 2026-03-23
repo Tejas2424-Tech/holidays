@@ -199,8 +199,9 @@ class HolidayBase(dict[date, str]):
     expand: bool
     """Whether the entire year is calculated when one date from that year
     is requested."""
-    observed: bool
-    """Whether dates when public holiday are observed are included."""
+    observed: bool | str
+    """Whether dates when public holiday are observed are included
+    (pass "only" to return only the observed date for shifted holidays)."""
     subdiv: str | None = None
     """The subdiv requested as ISO 3166-2 code or one of the aliases."""
     special_holidays: dict[int, SpecialHoliday | SubstitutedHoliday] = {}
@@ -234,7 +235,7 @@ class HolidayBase(dict[date, str]):
         self,
         years: YearArg | None = None,
         expand: bool = True,
-        observed: bool = True,
+        observed: bool | str = True,
         subdiv: str | None = None,
         prov: str | None = None,  # Deprecated.
         state: str | None = None,  # Deprecated.

@@ -54,3 +54,27 @@ class TestObservedHolidayBase(TestCase):
             },
             self.ohb,
         )
+
+    def test_observed_only(self):
+        # Create an instance with observed="only"
+        ohb_only = ObservedHolidayBase(observed="only", observed_rule=self.MON_TO_TUE)
+        ohb_only.observed_label = "%s (Observed Label)"
+        ohb_only._populate(2024)
+
+        # Adding a holiday that shifts from MON to TUE
+        is_observed, dt_observed = ohb_only._add_observed(
+            ohb_only._add_holiday("Test Holiday Only", self.MONDAY), rule=self.MON_TO_TUE
+        )
+
+        self.assertEqual(is_observed, True)
+        self.assertEqual(dt_observed, date(2024, 5, 14))
+        
+        # When observed="only", the statutory date (self.MONDAY) should be removed,
+        # and only the observed date should remain.
+        self.assertEqual(
+            dict(ohb_only),
+            {
+                date(2024, 5, 14): "Test Holiday Only (Observed Label)",
+            },
+            ohb_only,
+        )
